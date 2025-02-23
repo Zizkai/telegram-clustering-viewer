@@ -1,0 +1,7 @@
+.ruff_cache
+__pycache__
+env
+.data
+.streamlit
+push_data.py
+build

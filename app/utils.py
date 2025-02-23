@@ -69,15 +69,22 @@ def fill_context(texts, context_limit=128000 * 0.65):
 
 def describe_cluster(df, cluster_id):
     def summarize_texts(texts: list) -> str:
+        text_str = ""
+        for text in texts:
+            text_str += f"<msg>{text}</msg>\n"
         completion = client.beta.chat.completions.parse(
             model="gpt-4o-mini",
             messages=[
                 {
                     "role": "system",
-                    "content": """You are an expert in multilingual content analysis and intelligence gathering. 
-Summarize the following Russian-language messages into one concise and informative paragraph in English for intelligence 
-reporting. Prioritize names, locations, and dates while ensuring key topics and insights are retained. Avoid redundancy by 
-merging overlapping information into a single coherent statement. Maintain a neutral and objective tone, focusing only on factual content.""",
+                    "content": """You are an expert in multilingual content analysis and intelligence 
+gathering. Summarize the following Russian-language messages, which
+are enclosed within <msg></msg> tags, into one concise and informative
+paragraph in English for intelligence reporting. Prioritize names, 
+locations, and dates while ensuring key topics and insights are retained.
+Avoid redundancy by merging overlapping information into a single 
+coherent statement. Maintain a neutral and objective tone, 
+focusing only on factual content.""",
                 },
                 {"role": "user", "content": f"Inserted texts: \n{texts}"},
             ],

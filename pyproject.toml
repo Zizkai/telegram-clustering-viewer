@@ -51,7 +51,7 @@ exclude = [
 ]
 include = ["pyproject.toml", "app/**/*.py"]
 target-version = "py310"
-line-length = 180
+line-length = 120
 
 [tool.ruff.lint]
 select = [

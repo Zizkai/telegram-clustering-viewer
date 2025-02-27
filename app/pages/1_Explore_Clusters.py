@@ -1,5 +1,6 @@
 import sqlite3
 
+import db_utils
 import pandas as pd
 import streamlit as st
 import utils
@@ -10,12 +11,9 @@ st.set_page_config(
 )
 
 
-def get_unique_cluster_ids():
-    connection = sqlite3.connect("data.db")
-    query = "SELECT DISTINCT cluster FROM messages"
-    df = pd.read_sql_query(query, connection)
-    connection.close()
-    return sorted(df["cluster"].tolist())
+# debugging
+st.write("## Debugging")
+st.write(f"**Session state**: {st.session_state}")
 
 
 def get_cached_descriptions(cluster):
@@ -28,10 +26,11 @@ def get_cached_descriptions(cluster):
 
 # Streamlit app
 st.title("Cluster Data Viewer")
+st.write(f"Selected channel: {st.session_state.channel}")
 
 # Dropdown menu for selecting cluster ID
 st.sidebar.header("Select Cluster ID")
-cluster_ids = get_unique_cluster_ids()  # Example cluster IDs, you can modify this list
+cluster_ids = db_utils.get_cluster_ids(st.session_state.channel)
 selected_cluster_id = st.sidebar.selectbox("Choose a cluster ID:", cluster_ids)
 # add checkbox for summarization
 summary_checkbox = st.sidebar.checkbox("Generate cluster description", value=True)
@@ -51,7 +50,7 @@ def get_data_from_db(cluster_id):
 
 # Display data corresponding to the selected cluster ID
 if st.sidebar.button("Show Data"):
-    cluster_data = get_data_from_db(selected_cluster_id)
+    cluster_data = db_utils.get_messages_by_cluster(st.session_state.channel, selected_cluster_id)
     if not cluster_data.empty:
         st.write(f"Displaying data for Cluster ID: {selected_cluster_id}")
         if summary_checkbox:
@@ -62,19 +61,13 @@ if st.sidebar.button("Show Data"):
                 topic = cached_data.iloc[0]["topic"]
             else:
                 with st.spinner("Generating cluster description..."):
-                    description, topic = utils.describe_cluster(
-                        cluster_data, selected_cluster_id
-                    )
+                    description, topic = utils.describe_cluster(cluster_data["text"].tolist())
             st.write(description)
             st.write(f"Topic: {topic}")
         if location_checkbox:
             st.header("Locations")
             with st.spinner("Loading main locations..."):
-                st.write(
-                    utils.extract_locations_from_clusters(
-                        cluster_data, selected_cluster_id
-                    )
-                )
+                st.write(utils.extract_locations_from_clusters(cluster_data, selected_cluster_id))
         st.header("Messages:")
         for _, row in cluster_data.iterrows():
             st.write(f"Message ID: {row['id']}")

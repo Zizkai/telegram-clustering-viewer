@@ -1,3 +1,4 @@
+import logging
 import os
 
 import numpy as np
@@ -67,7 +68,7 @@ def fill_context(texts, context_limit=128000 * 0.65):
     return contexts, stats
 
 
-def describe_cluster(df, cluster_id):
+def describe_cluster(cluster_messages):
     def summarize_texts(texts: list) -> str:
         text_str = ""
         for text in texts:
@@ -141,8 +142,9 @@ paragraph of plain text.""",
                 {
                     "role": "system",
                     "content": """
-You are an expert text analyzer. Your task is to determine the main topic of the following text. Please provide the topic in
-one concise sentence or phrase, focusing on the core subject or idea discussed. Avoid including unnecessary details or interpretations""",
+You are an expert text analyzer. Your task is to determine the main topic of the following text. 
+Please provide the topic in one concise sentence or phrase, focusing on the core subject or idea 
+discussed. Avoid including unnecessary details or interpretations""",
                 },
                 {"role": "user", "content": f"Text:\n {texts}"},
             ],
@@ -150,8 +152,7 @@ one concise sentence or phrase, focusing on the core subject or idea discussed. 
         )
         return completion.choices[0].message.parsed.main_topic
 
-    cluster_texts = df[df["cluster"] == cluster_id]
-    cluster_texts = cluster_texts["text"].tolist()
+    cluster_texts = cluster_messages
     contexts, stats = fill_context(cluster_texts)
     responses = []
     for context in contexts:
@@ -171,7 +172,8 @@ def extract_keywords(text):
         messages=[
             {
                 "role": "system",
-                "content": "Extract the most important topics and location (Top 10) from the following text:",
+                "content": """
+                Extract the most important topics and location (Top 10) from the following text:""",
             },
             {"role": "user", "content": text},
         ],
@@ -188,7 +190,8 @@ def extract_locations_from_clusters(df, cluster_id):
             messages=[
                 {
                     "role": "system",
-                    "content": "Extract the most important locations from the following texts. Group them by regions. Output will be in english.",
+                    "content": """Extract the most important locations from the following texts. 
+Group them by regions. Output will be in english.""",
                 },
                 {"role": "user", "content": f"Texts:\n {texts}"},
             ],
@@ -218,3 +221,89 @@ def extract_locations_from_clusters(df, cluster_id):
         response_format=KeywordExtraction,
     )
     return completion.choices[0].message.parsed.keywords
+
+
+def describe_channel(texts):
+    def summarize_texts(texts: list) -> str:
+        text_str = ""
+        for text in texts:
+            text_str += f"<msg>{text}</msg>\n"
+        completion = client.beta.chat.completions.parse(
+            model="gpt-4o-mini",
+            messages=[
+                {
+                    "role": "system",
+                    "content": """You are an expert in multilingual content analysis and intelligence 
+gathering. Summarize the following Russian-language messages, which
+are enclosed within <msg></msg> tags, into one concise and informative
+paragraph in English for intelligence reporting. Prioritize names, 
+locations, and dates while ensuring key topics and insights are retained.
+Avoid redundancy by merging overlapping information into a single 
+coherent statement. Maintain a neutral and objective tone, 
+focusing only on factual content.""",
+                },
+                {"role": "user", "content": f"Inserted texts: \n{texts}"},
+            ],
+            response_format=Summarization,
+            temperature=0.3,
+            max_completion_tokens=800,
+        )
+        return completion.choices[0].message.parsed.summary
+
+    def sumarization_of_sumarizations(responses):
+        contexts, stats = fill_context(responses)
+        summaries = []
+        prompt_text = ""
+        for context in contexts:
+            for text in context:
+                prompt_text += f"<summary>{text}</summary>\n"
+            completion = client.beta.chat.completions.parse(
+                model="gpt-4o-mini",
+                messages=[
+                    {
+                        "role": "system",
+                        "content": """
+Prompt:
+You are an expert in content synthesis and intelligence analysis. Your task
+is to combine the following summaries into a single, cohesive summary that
+captures recurring themes, key events, and critical details while
+eliminating redundancy. Ensure that the final summary:
+- Synthesizes information to highlight overarching trends, connections,
+and central ideas.
+- Prioritizes significant events, locations, names, and key phrases
+while preserving accuracy.
+- Removes redundant or overlapping content, ensuring clarity and
+conciseness.
+Maintains a neutral, objective tone while delivering a structured and
+well-organized output.The input summaries are enclosed in
+<summary></summary> tags. The final output should be a single, concise
+paragraph of plain text.""",
+                    },
+                    {"role": "user", "content": f"Summaries: \n{prompt_text}"},
+                ],
+                response_format=Summarization,
+                temperature=0.3,
+                max_completion_tokens=800,
+            )
+
+            response = completion.choices[0].message.parsed
+            summaries.append(response.summary)
+        return summaries
+
+    logging.info("describing channel - going to fill context, messages length: %s", len(texts))
+    contexts, _ = fill_context(texts)
+    logging.info("describing channel - filled context, contexts length: %s", len(contexts))
+
+    logging.info("describing channel - starting first stage of summarization")
+    responses = []
+    for context in contexts:
+        response = summarize_texts(context)
+        responses.append(response)
+    logging.info("describing channel - finished first stage of summarization")
+
+    while len(responses) > 1:
+        logging.info("describing channel - second stage, responses length: %s", len(responses))
+        responses = sumarization_of_sumarizations(responses)
+    description = responses[0]
+    logging.info("describing channel - finished second stage of summarization")
+    return description

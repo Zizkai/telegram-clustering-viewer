@@ -1,3 +1,5 @@
+# TODO -> secret mockup, URL to page
+
 # Clustering Data Visualization Tool
 
 This application was developed as part of a master's thesis and is available at [XXX](XXX).  

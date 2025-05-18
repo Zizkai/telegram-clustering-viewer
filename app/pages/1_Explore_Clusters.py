@@ -5,74 +5,81 @@ import pandas as pd
 import streamlit as st
 import utils
 
+
+def cluster_selection_logic():
+    # check if channel has keywords
+    keywords = db_utils.get_clustering_keywords(st.session_state.channel)
+    if keywords.empty:
+        keywords = db_utils.get_cluster_ids(st.session_state.channel)
+    else:
+        str_keywords = []
+        for _, row in keywords.iterrows():
+            str_keywords.append(", ".join(row["keywords"]) + (f" (ID: {row['cluster_id']})"))
+        keywords = str_keywords
+    return keywords
+
+
+def load_app():
+    # Streamlit app
+    st.title("Cluster Data Viewer")
+    st.write(f"**Selected channel**: {st.session_state.channel}")
+
+    # Dropdown menu for selecting cluster ID
+    st.sidebar.header("Select Cluster")
+    clusters = cluster_selection_logic()
+    selected_cluster_id = st.sidebar.selectbox("**Choose a cluster**:", clusters)
+    try:
+        selected_cluster_id = int(selected_cluster_id.split("(ID: ")[1].split(")")[0])
+    except (AttributeError, ValueError):
+        selected_cluster_id = int(selected_cluster_id)
+
+    # add checkbox for summarization
+    summary_checkbox = st.sidebar.checkbox("Generate cluster description (Using LLM)", value=True)
+
+    # Display data corresponding to the selected cluster ID
+    if st.sidebar.button("Show Data"):
+        cluster_data = db_utils.get_messages_by_cluster(st.session_state.channel, selected_cluster_id)
+        if not cluster_data.empty:
+            st.write(f"Displaying data for Cluster ID: {selected_cluster_id}")
+            if summary_checkbox:
+                st.header("Cluster Description")
+                with st.spinner("Generating cluster description..."):
+                    description, topic = utils.describe_cluster(cluster_data["text"].tolist())
+                st.write(description)
+                st.write(f"Topic: {topic}")
+            else:
+                df_description = db_utils.get_cluster_description(st.session_state.channel, selected_cluster_id)
+                if not df_description.empty:
+                    st.write(f"**Cluster Description**: {df_description['summary'].iloc[0]}")
+                    st.write(f"**Keywords**: {df_description['keywords'].iloc[0]}")
+                else:
+                    st.write("No description available for this cluster.")
+            st.write(f"**Number of messages in cluster:** {cluster_data.shape[0]}")
+
+            st.header("Messages:")
+            for _, row in cluster_data.iterrows():
+                tab1, tab2 = st.tabs(["Eng", "Original Text"])
+                with tab1:
+                    st.write(f"Message ID: {row['id']}")
+                    st.write(f"Date: {row['date']}")
+                    st.write(f"Text: {row['text_en']}")
+                with tab2:
+                    st.write(f"Message ID: {row['id']}")
+                    st.write(f"Date: {row['date']}")
+                    st.write(f"Text: {row['text']}")
+                st.write("---")
+        else:
+            st.write(f"No data available for Cluster ID: {selected_cluster_id}")
+
+
 st.set_page_config(
     page_title="Cluster Exlporer",
     page_icon="🔍",
 )
 
 
-# debugging
-st.write("## Debugging")
-st.write(f"**Session state**: {st.session_state}")
-
-
-def get_cached_descriptions(cluster):
-    connection = sqlite3.connect("data.db")
-    query = "SELECT * FROM cluster_description WHERE cluster = ?"
-    df = pd.read_sql_query(query, connection, params=(cluster,))
-    connection.close()
-    return df
-
-
-# Streamlit app
-st.title("Cluster Data Viewer")
-st.write(f"Selected channel: {st.session_state.channel}")
-
-# Dropdown menu for selecting cluster ID
-st.sidebar.header("Select Cluster ID")
-cluster_ids = db_utils.get_cluster_ids(st.session_state.channel)
-selected_cluster_id = st.sidebar.selectbox("Choose a cluster ID:", cluster_ids)
-# add checkbox for summarization
-summary_checkbox = st.sidebar.checkbox("Generate cluster description", value=True)
-location_checkbox = st.sidebar.checkbox("Generate locations", value=False)
-# used cached data
-cached_checkbox = st.sidebar.checkbox("Use cached data", value=False)
-
-
-def get_data_from_db(cluster_id):
-    connection = sqlite3.connect("data.db")
-    query = "SELECT * FROM messages WHERE cluster = ?"
-    df = pd.read_sql_query(query, connection, params=(cluster_id,))
-    connection.close()
-    df.rename(columns={"text_original": "text"}, inplace=True)
-    return df
-
-
-# Display data corresponding to the selected cluster ID
-if st.sidebar.button("Show Data"):
-    cluster_data = db_utils.get_messages_by_cluster(st.session_state.channel, selected_cluster_id)
-    if not cluster_data.empty:
-        st.write(f"Displaying data for Cluster ID: {selected_cluster_id}")
-        if summary_checkbox:
-            st.header("Cluster Description")
-            if cached_checkbox:
-                cached_data = get_cached_descriptions(selected_cluster_id)
-                description = cached_data.iloc[0]["description"]
-                topic = cached_data.iloc[0]["topic"]
-            else:
-                with st.spinner("Generating cluster description..."):
-                    description, topic = utils.describe_cluster(cluster_data["text"].tolist())
-            st.write(description)
-            st.write(f"Topic: {topic}")
-        if location_checkbox:
-            st.header("Locations")
-            with st.spinner("Loading main locations..."):
-                st.write(utils.extract_locations_from_clusters(cluster_data, selected_cluster_id))
-        st.header("Messages:")
-        for _, row in cluster_data.iterrows():
-            st.write(f"Message ID: {row['id']}")
-            st.write(f"Date: {row['date']}")
-            st.write(f"Text: {row['text_en']}")
-            st.write("---")
-    else:
-        st.write(f"No data available for Cluster ID: {selected_cluster_id}")
+if "channel" not in st.session_state or st.session_state.channel is None:
+    st.warning("**Please select a channel in the Home page.**", icon="⚠️")
+else:
+    # Load the app
+    load_app()

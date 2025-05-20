@@ -23,16 +23,16 @@ The main goal of the project is to provide users with an insightful view into cl
 1. Clone the repository and switch to local branch:
 
    ```bash
-   git clone https://github.com/your-username/your-repository.git
-   cd your-repository
+   git clone https://github.com/Zizkai/telegram-clustering-viewer.git
+   cd telegram-clustering-viewer
    git checkout local
    ```
 
 2. Install the required packages:
    ```bash
-    python -m venv .venv
+    python -m venv .venv #must be python 3.10 or higher try python3.10 -m venv .venv
     source .venv/bin/activate  # On Windows use: .venv\Scripts\activate
-    pip install .
+    pip install -r requirements.txt
    ```
 3. Set up the database:
    ```

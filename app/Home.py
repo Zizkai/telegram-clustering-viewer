@@ -59,7 +59,7 @@ if selection_button:
 
     with st.spinner("Loading clustering information..."):
         try:
-            lustering_info = db_utils.get_clustering_info(channel)
+            clustering_info = db_utils.get_clustering_info(channel)
         except Exception as e:
             logging.error(f"Error getting clustering info: {e}")
             clustering_info = None

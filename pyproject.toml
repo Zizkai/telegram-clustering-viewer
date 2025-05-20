@@ -1,6 +1,6 @@
 
 [project]
-name = "telegram-clustering"
+name = "Cluster-viewer"
 version = "0.1.0"
 authors = [
   {name = "Ivan Zizka", email = "ivan-zizka@seznam.cz"}
@@ -12,9 +12,8 @@ dependencies = [
     "numpy", 
     "pandas",
     "plotly",
-    "scikit-learn",
-    "folium",
-    "geopy"
+    "fastparquet",
+    "gdown"
     ]
 requires-python = ">=3.10"
 

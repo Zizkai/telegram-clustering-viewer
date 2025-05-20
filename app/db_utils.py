@@ -60,6 +60,7 @@ def get_clustering_info(channel: str) -> dict[str, list[int]]:
     return clustering_info
 
 
+@st.cache_data
 def get_channel_names() -> list[str]:
     """
     Returns a list of distinct channel names from the channels table in the database.
@@ -76,6 +77,7 @@ def get_channel_names() -> list[str]:
     return ret
 
 
+@st.cache_data
 def llm_judge_channels() -> list[str]:
     """
     Returns a list of distinct channel names from the llm_as_a_judge_texts table in the database.
@@ -187,6 +189,7 @@ def get_llm_judge_decision_data(channel, llm_model) -> pd.DataFrame:
     return decisions
 
 
+@st.cache_data
 def get_cluster_ids(channel: str) -> list[int]:
     """
     Returns a sorted list of distinct cluster IDs for a given channel from the clustering table in the database.
@@ -321,6 +324,7 @@ def get_channel_first_msg(channel: str) -> str:
     return first_msg
 
 
+@st.cache_data
 def get_channel_info(channel: str) -> dict[str, str | int]:
     """
     Returns the description, number of messages, and channel creation date for a given channel.
@@ -394,29 +398,6 @@ def get_channel_message_histogram(channel: str) -> pd.DataFrame:
     return histogram
 
 
-def get_cluster_embeddings(channel: str):
-    conn = get_connection()
-    cur = conn.cursor()
-    cur.execute(
-        """
-        SELECT 
-            c.id, e.embedding, c.cluster_id
-        FROM clustering c
-        INNER JOIN embeddings e
-        ON (c.id = e.id AND c.channel = e.channel)
-        WHERE c.channel = %s
-        """,
-        (channel,),
-    )
-    embeddings = cur.fetchall()
-
-    cur.close()
-    conn.close()
-
-    embeddings = pd.DataFrame(embeddings, columns=["id", "embedding", "cluster_id"])
-    return embeddings
-
-
 def check_if_clustering_exists(channel: str) -> bool:
     """
     Check if clustering exists for a given channel in the database.
@@ -443,6 +424,7 @@ def check_if_clustering_exists(channel: str) -> bool:
     return count > 0
 
 
+@st.cache_data
 def get_clustering_keywords(channel: str) -> pd.DataFrame:
     """
     Returns a DataFrame of keywords for each cluster in the database for a given channel.

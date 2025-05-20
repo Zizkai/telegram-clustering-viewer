@@ -1,9 +1,5 @@
-import sqlite3
-
 import db_utils
-import pandas as pd
 import streamlit as st
-import utils
 
 
 def cluster_selection_logic():
@@ -34,7 +30,8 @@ def load_app():
         selected_cluster_id = int(selected_cluster_id)
 
     # add checkbox for summarization
-    summary_checkbox = st.sidebar.checkbox("Generate cluster description (Using LLM)", value=True)
+    # summary_checkbox = st.sidebar.checkbox("Generate cluster description (Using LLM)", value=True)
+    summary_checkbox = False
 
     # Display data corresponding to the selected cluster ID
     if st.sidebar.button("Show Data"):
@@ -42,11 +39,12 @@ def load_app():
         if not cluster_data.empty:
             st.write(f"Displaying data for Cluster ID: {selected_cluster_id}")
             if summary_checkbox:
-                st.header("Cluster Description")
-                with st.spinner("Generating cluster description..."):
-                    description, topic = utils.describe_cluster(cluster_data["text"].tolist())
-                st.write(description)
-                st.write(f"Topic: {topic}")
+                pass
+                # st.header("Cluster Description")
+                # with st.spinner("Generating cluster description..."):
+                #     description, topic = utils.describe_cluster(cluster_data["text"].tolist())
+                # st.write(description)
+                # st.write(f"Topic: {topic}")
             else:
                 df_description = db_utils.get_cluster_description(st.session_state.channel, selected_cluster_id)
                 if not df_description.empty:
@@ -82,4 +80,5 @@ if "channel" not in st.session_state or st.session_state.channel is None:
     st.warning("**Please select a channel in the Home page.**", icon="⚠️")
 else:
     # Load the app
-    load_app()
+    with st.spinner("Loading data from DB..."):
+        load_app()

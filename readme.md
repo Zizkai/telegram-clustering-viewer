@@ -1,8 +1,8 @@
-# TODO -> secret mockup, URL to page
+# TODO -> secret mockup, URL to page, final version
 
 # Clustering Data Visualization Tool
 
-This application was developed as part of a master's thesis and is available at [XXX](XXX).  
+This application was developed as part of a master's thesis and is available at [XXX](XXX). The online version might be slower than the local version due to the use of a AWS database (small instance).
 The main goal of the project is to provide users with an insightful view into clustering data and to clearly present the results.
 
 ## 🎯 Key Features
@@ -42,7 +42,7 @@ The main goal of the project is to provide users with an insightful view into cl
    ```bash
    gdown https://drive.google.com/uc\?id\=1LndG_YSmcSTSB7PSCtZh0fVIsQSa48_t
    ```
-5. Uploade the database backup to the PostgreSQL container:
+5. Upload the database backup to the PostgreSQL container:
    ```bash
     cat full_backup_16_5.sql | docker exec -i local-postgres psql -U admin
    ```

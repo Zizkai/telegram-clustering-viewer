@@ -1,9 +1,5 @@
-import sqlite3
-
 import db_utils
-import pandas as pd
 import streamlit as st
-import utils
 
 
 def cluster_selection_logic():
@@ -33,27 +29,18 @@ def load_app():
     except (AttributeError, ValueError):
         selected_cluster_id = int(selected_cluster_id)
 
-    # add checkbox for summarization
-    summary_checkbox = st.sidebar.checkbox("Generate cluster description (Using LLM)", value=True)
-
     # Display data corresponding to the selected cluster ID
     if st.sidebar.button("Show Data"):
         cluster_data = db_utils.get_messages_by_cluster(st.session_state.channel, selected_cluster_id)
         if not cluster_data.empty:
             st.write(f"Displaying data for Cluster ID: {selected_cluster_id}")
-            if summary_checkbox:
-                st.header("Cluster Description")
-                with st.spinner("Generating cluster description..."):
-                    description, topic = utils.describe_cluster(cluster_data["text"].tolist())
-                st.write(description)
-                st.write(f"Topic: {topic}")
+
+            df_description = db_utils.get_cluster_description(st.session_state.channel, selected_cluster_id)
+            if not df_description.empty:
+                st.write(f"**Cluster Description**: {df_description['summary'].iloc[0]}")
+                st.write(f"**Keywords**: {df_description['keywords'].iloc[0]}")
             else:
-                df_description = db_utils.get_cluster_description(st.session_state.channel, selected_cluster_id)
-                if not df_description.empty:
-                    st.write(f"**Cluster Description**: {df_description['summary'].iloc[0]}")
-                    st.write(f"**Keywords**: {df_description['keywords'].iloc[0]}")
-                else:
-                    st.write("No description available for this cluster.")
+                st.write("No description available for this cluster.")
             st.write(f"**Number of messages in cluster:** {cluster_data.shape[0]}")
 
             st.header("Messages:")

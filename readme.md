@@ -44,12 +44,12 @@ The main goal of the project is to provide users with an insightful view into cl
    ```
 5. Uploade the database backup to the PostgreSQL container:
    ```bash
-    cat backup.sql | docker exec -i local-postgres psql -U admin
+    cat backup.sql | docker exec -i local-postgres psql -U admin -d data
    ```
 6. Run the application:
 
    ```bash
-   streamlit run app/Home.py
+   .venv/bin/streamlit run app/Home.py
    ```
 
 7. Open your web browser and go to `http://localhost:8501`

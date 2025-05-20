@@ -7,13 +7,6 @@ authors = [
 ]
 
 
-dependencies = [
-    "streamlit",
-    "numpy", 
-    "pandas",
-    "fastparquet",
-    "gdown"
-    ]
 requires-python = ">=3.10"
 
 [tool.ruff]

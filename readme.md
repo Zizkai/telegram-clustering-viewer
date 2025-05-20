@@ -1,8 +1,8 @@
-# TODO -> secret mockup, URL to page, final version
+# TODO -> secret mockup, URL to page
 
 # Clustering Data Visualization Tool
 
-This application was developed as part of a master's thesis and is available at [XXX](XXX). The online version might be slower than the local version due to the use of a AWS database (small instance).
+This application was developed as part of a master's thesis and is available at [XXX](XXX).  
 The main goal of the project is to provide users with an insightful view into clustering data and to clearly present the results.
 
 ## 🎯 Key Features
@@ -20,19 +20,19 @@ The main goal of the project is to provide users with an insightful view into cl
 
 ## 🚀 How to run locally:
 
-1. Clone the repository:
+1. Clone the repository and switch to local branch:
 
    ```bash
-   git clone https://github.com/your-username/your-repository.git
-   cd your-repository
-
+   git clone https://github.com/Zizkai/telegram-clustering-viewer.git
+   cd telegram-clustering-viewer
+   git checkout local
    ```
 
 2. Install the required packages:
    ```bash
-    python -m venv .venv
+    python -m venv .venv #must be python 3.10 or higher try python3.10 -m venv .venv
     source .venv/bin/activate  # On Windows use: .venv\Scripts\activate
-    pip install .
+    pip install -r requirements.txt
    ```
 3. Set up the database:
    ```
@@ -40,16 +40,16 @@ The main goal of the project is to provide users with an insightful view into cl
    ```
 4. Download database backup
    ```bash
-   gdown https://drive.google.com/uc\?id\=1LndG_YSmcSTSB7PSCtZh0fVIsQSa48_t
+   gdown https://drive.google.com/uc\?id\=1TRGHMOuv1xy4oZxCCbgwSSxWBYZmP9gj
    ```
-5. Upload the database backup to the PostgreSQL container:
+5. Uploade the database backup to the PostgreSQL container:
    ```bash
-    cat full_backup_16_5.sql | docker exec -i local-postgres psql -U admin
+    cat backup.sql | docker exec -i local-postgres psql -U admin -d data
    ```
 6. Run the application:
 
    ```bash
-   streamlit run app/Home.py
+   .venv/bin/streamlit run app/Home.py
    ```
 
 7. Open your web browser and go to `http://localhost:8501`

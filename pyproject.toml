@@ -11,10 +11,8 @@ dependencies = [
     "streamlit",
     "numpy", 
     "pandas",
-    "plotly",
-    "scikit-learn",
-    "folium",
-    "geopy"
+    "fastparquet",
+    "gdown"
     ]
 requires-python = ">=3.10"
 

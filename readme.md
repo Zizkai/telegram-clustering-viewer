@@ -20,12 +20,12 @@ The main goal of the project is to provide users with an insightful view into cl
 
 ## 🚀 How to run locally:
 
-1. Clone the repository:
+1. Clone the repository and switch to local branch:
 
    ```bash
    git clone https://github.com/your-username/your-repository.git
    cd your-repository
-
+   git checkout local
    ```
 
 2. Install the required packages:
@@ -40,11 +40,11 @@ The main goal of the project is to provide users with an insightful view into cl
    ```
 4. Download database backup
    ```bash
-   gdown https://drive.google.com/uc\?id\=1LndG_YSmcSTSB7PSCtZh0fVIsQSa48_t
+   gdown https://drive.google.com/uc\?id\=1TRGHMOuv1xy4oZxCCbgwSSxWBYZmP9gj
    ```
 5. Uploade the database backup to the PostgreSQL container:
    ```bash
-    cat full_backup_16_5.sql | docker exec -i local-postgres psql -U admin
+    cat backup.sql | docker exec -i local-postgres psql -U admin
    ```
 6. Run the application:
 

@@ -1,3 +1,5 @@
+import logging
+
 import db_utils
 import pandas as pd
 import streamlit as st
@@ -56,7 +58,15 @@ if selection_button:
     st.write("**Number of clusters**: ", len(db_utils.get_cluster_ids(channel)))
 
     with st.spinner("Loading clustering information..."):
-        clustering_info = db_utils.get_clustering_info(channel)
+        try:
+            lustering_info = db_utils.get_clustering_info(channel)
+        except Exception as e:
+            logging.error(f"Error getting clustering info: {e}")
+            clustering_info = None
+        if clustering_info is None:
+            st.write("Clustering info no in DB.")
+            st.stop()
+
     inter = clustering_info["inter"]
     n_clusters = clustering_info["num_clusters"]
     silhouette = clustering_info["silhouette"]

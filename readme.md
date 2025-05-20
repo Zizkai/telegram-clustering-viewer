@@ -2,7 +2,7 @@
 
 # Clustering Data Visualization Tool
 
-This application was developed as part of a master's thesis and is available at [XXX](XXX).  
+This application was developed as part of a master's thesis and is available at [https://telegram-clustering-viewer.streamlit.app/](https://telegram-clustering-viewer.streamlit.app/).  
 The main goal of the project is to provide users with an insightful view into clustering data and to clearly present the results.
 
 ## 🎯 Key Features

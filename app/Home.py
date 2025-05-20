@@ -1,3 +1,5 @@
+import logging
+
 import db_utils
 import pandas as pd
 import streamlit as st
@@ -41,8 +43,6 @@ if selection_button:
     channel_info = db_utils.get_channel_info(channel)
     st.write(f"**Number of messages**: {channel_info['messages']}")
     st.write(f"**Channel created**: {channel_info['channel_created']}")
-    st.write(f"Clustering in DB: {db_utils.check_if_clustering_exists(channel)}")
-    st.write(f"""**Channel description**: {channel_info["description"]}""")
 
     # create histogram of messages and use loading spinner
     st.write("## Channel activity over time")
@@ -51,8 +51,14 @@ if selection_button:
 
     st.write("## Clustering information")
     st.write("**Number of clusters**: ", len(db_utils.get_cluster_ids(channel)))
-
-    clustering_info = db_utils.get_clustering_info(channel)
+    try:
+        clustering_info = db_utils.get_clustering_info(channel)
+    except Exception as e:
+        logging.error(f"Error getting clustering info: {e}")
+        clustering_info = None
+    if clustering_info is None:
+        st.write("Clustering info no in DB.")
+        st.stop()
     inter = clustering_info["inter"]
     n_clusters = clustering_info["num_clusters"]
     silhouette = clustering_info["silhouette"]

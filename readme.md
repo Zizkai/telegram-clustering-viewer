@@ -1,5 +1,3 @@
-# TODO -> secret mockup, URL to page
-
 # Clustering Data Visualization Tool
 
 This application was developed as part of a master's thesis and is available at [https://telegram-clustering-viewer.streamlit.app/](https://telegram-clustering-viewer.streamlit.app/).  

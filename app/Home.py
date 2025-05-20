@@ -63,9 +63,9 @@ if selection_button:
         except Exception as e:
             logging.error(f"Error getting clustering info: {e}")
             clustering_info = None
-        if clustering_info is None:
-            st.write("Clustering info no in DB.")
-            st.stop()
+    if clustering_info is None:
+        st.write("Clustering info no in DB.")
+        st.stop()
 
     inter = clustering_info["inter"]
     n_clusters = clustering_info["num_clusters"]
